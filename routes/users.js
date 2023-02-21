@@ -55,9 +55,10 @@ router.post("/loginUser", function (req, res, next) {
 
 router.post("/addUser", function (req, res, next) {
   console.log("add user");
+  console.log([req.body.email, req.body.password, req.body.userName]);
   connection.query(
-    `insert into users (email, password) values (?, ?)`,
-    [req.body.email, req.body.password],
+    `insert into users (email, password, userName) values (?, ?, ?)`,
+    [req.body.email, req.body.password, req.body.userName],
     (err, result) => {
       if (err && err.code === "ER_DUP_ENTRY") {
         // res.set({ "Content-Type": "text/plain" });
