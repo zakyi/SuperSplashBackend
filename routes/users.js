@@ -17,12 +17,44 @@ var router = express.Router();
 
 /* POST users listing. */
 router.post("/loginUser", function (req, res, next) {
-  console.log(req.body);
+  connection.query(
+    `select * from users where email=?`,
+    [req.body.email],
+    (err, result) => {
+      if (err) {
+        res.statusCode = 400;
+        res.send({ error: "Error with sql" });
+      } else {
+        if (result.length === 0) {
+          res.statusCode = 400;
+          res.send({ error: "Email does not exist" });
+        } else {
+          connection.query(
+            `select * from users where email=? and password=?`,
+            [req.body.email, req.body.password],
+            (err, result) => {
+              console.log([req.body.email, req.body.password]);
+              if (err) {
+                res.statusCode = 400;
+                res.send({ error: "Error with sql" });
+              } else {
+                if (result.length === 0) {
+                  res.statusCode = 400;
+                  res.send({ error: "Incorrect password" });
+                } else {
+                  res.send({ message: "Login success, enjoy!" });
+                }
+              }
+            }
+          );
+        }
+      }
+    }
+  );
 });
 
 router.post("/addUser", function (req, res, next) {
   console.log("add user");
-  console.log(req.body);
   connection.query(
     `insert into users (email, password) values (?, ?)`,
     [req.body.email, req.body.password],
