@@ -1,6 +1,5 @@
 var express = require("express");
 var mysql = require("mysql");
-var bcrypt = require("bcryptjs");
 var jwt = require("jsonwebtoken");
 
 var connection = mysql.createConnection({
