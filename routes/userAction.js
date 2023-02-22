@@ -67,8 +67,61 @@ const handleAction = async (imageId, userEmail, table) => {
   }
 };
 
-router.post("/", (req, res, next) => {
-  console.log(req.body);
+const verifyUserToken = (token) => {
+  return new Promise((resolve, reject) => {
+    connection.query("select * from privatedata", [], (err, result) => {
+      try {
+        const decode = jwt.verify(token, result[0].secretKey);
+        if (decode.exp * 1000 < Date.now()) reject(new Error("Token expired"));
+        resolve(decode);
+      } catch (err) {
+        reject(new Error("Token not valid"));
+      }
+    });
+  });
+};
+
+const signUserData = (user) => {
+  return new Promise((resolve, reject) => {
+    connection.query("select * from privatedata", [], (err, result) => {
+      secretKey = result[0].secretKey;
+      token = jwt.sign(
+        {
+          email: user.email,
+          userName: user.email,
+          likes: user.likes.toString(),
+          collections: user.collections.toString(),
+        },
+        secretKey,
+        {
+          expiresIn: "2d",
+        }
+      );
+      user.token = token;
+      resolve(user);
+    });
+  });
+};
+
+const addUserAction = (user, imageId, type) => {
+  const newUser = {
+    email: user.email,
+    userName: user.email,
+    likes: user.likes.length === 0 ? [] : user.likes.split(","),
+    collections:
+      user.collections.length === 0 ? [] : user.collections.split(","),
+  };
+
+  if (type === "likes") {
+    newUser.likes.push(imageId);
+  }
+  if (type === "collections") {
+    newUser.collections.push(imageId);
+  }
+  return newUser;
+};
+
+router.post("/", async (req, res, next) => {
   /**   req.body
    * {
         imageId: 'wallpaper/001.jpg',
@@ -76,15 +129,19 @@ router.post("/", (req, res, next) => {
         type: 'collections'
    * }   
    */
+  const token = req.headers.authorization.split(" ")[1];
 
-  handleAction(req.body.imageId, req.body.userEmail, req.body.type)
-    .then((message) => {
-      console.log({ message });
-      res.status(200).send({ message });
-    })
-    .catch((err) => {
-      res.status(400).send({ message: err });
-    });
+  try {
+    let user = await verifyUserToken(token);
+    await handleAction(req.body.imageId, req.body.userEmail, req.body.type);
+    user = addUserAction(user, req.body.imageId, req.body.type);
+    const newUser = await signUserData(user);
+    console.log(newUser);
+    res.status(200).send(newUser);
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ message: err.message });
+  }
 });
 
 module.exports = router;
