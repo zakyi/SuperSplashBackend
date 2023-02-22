@@ -32,57 +32,165 @@ router.post("/verifyUser", (req, res, next) => {
   });
 });
 
-router.post("/loginUser", function (req, res, next) {
-  connection.query(
-    `select * from users where email=?`,
-    [req.body.email],
-    (err, result) => {
-      if (err) res.status(500).send({ error: "Error with sql" });
-      else {
-        if (result.length === 0)
-          res.status(400).send({ error: "Email does not exist" });
+const checkEmailExistPromise = (email) => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `select * from users where email=?`,
+      [email],
+      (err, result) => {
+        if (err) reject(new Error({ code: 500, error: "Error with sql" }));
+        else if (result.length === 0)
+          reject(new Error({ code: 400, error: "Email does not exist" }));
+        else resolve("OK");
+      }
+    );
+  });
+};
+
+const checkPasswordCorrect = (email, password) => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `select * from users where email=? and password=?`,
+      [email, password],
+      (err, result) => {
+        if (err) reject(new Error({ code: 500, error: "Error with sql" }));
+        else if (result.length === 0)
+          reject(new Error({ code: 400, error: "Incorrect password" }));
         else {
-          connection.query(
-            `select * from users where email=? and password=?`,
-            [req.body.email, req.body.password],
-            (err, result) => {
-              if (err) res.status(400).send({ error: "Error with sql" });
-              else {
-                if (result.length === 0)
-                  res.status(400).send({ error: "Incorrect password" });
-                else {
-                  //TODO: add likes and collections
-                  const { userName, email } = result[0];
-                  connection.query(
-                    "select * from privatedata",
-                    [],
-                    (err, result) => {
-                      secretKey = result[0].secretKey;
-                      token = jwt.sign({ email, userName }, secretKey, {
-                        expiresIn: "2d",
-                      });
-                      const user = {
-                        userName,
-                        email,
-                        //TODO//
-                        likes: [],
-                        collections: [],
-                        ////////
-                        token: token,
-                      };
-                      res
-                        .status(200)
-                        .send({ message: "Login success, enjoy!", user });
-                    }
-                  );
-                }
-              }
-            }
-          );
+          const { userName, email } = result[0];
+          resolve({ userName, email });
         }
       }
-    }
-  );
+    );
+  });
+};
+
+const addUserData = ({ userName, email }) => {
+  return new Promise((resolve, reject) => {
+    const user = {
+      userName,
+      email,
+      //TODO//
+      likes: [],
+      collections: [],
+      ////////
+      token: "",
+    };
+    resolve(user);
+  });
+};
+
+const addUserLikes = (user) => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "select * from likes where userEmail=?",
+      [user.email],
+      (err, result) => {
+        if (err) reject(new Error({ code: 500, error: "Error with sql" }));
+        else if (result.length === 0) resolve(user);
+        else {
+          /**result
+           * [
+              RowDataPacket {
+                id: 1,
+                imageId: 'wallpaper/011.jpg',
+                userEmail: 'zhyi@gmail.com'
+              },
+              RowDataPacket {
+                id: 2,
+                imageId: 'wallpaper/009.jpg',
+                userEmail: 'zhyi@gmail.com'
+              },
+              RowDataPacket {
+                id: 3,
+                imageId: 'wallpaper/010.jpg',
+                userEmail: 'zhyi@gmail.com'
+              },
+              RowDataPacket {
+                id: 4,
+                imageId: 'wallpaper/023.jpg',
+                userEmail: 'zhyi@gmail.com'
+              },
+              RowDataPacket {
+                id: 5,
+                imageId: 'wallpaper/026.jpg',
+                userEmail: 'zhyi@gmail.com'
+              }
+            ]
+           */
+          user.likes = result.map((RowDataPacket) => {
+            return RowDataPacket.imageId;
+          });
+          resolve(user);
+        }
+      }
+    );
+  });
+};
+
+const addUserCollections = (user) => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "select * from collections where userEmail=?",
+      [user.email],
+      (err, result) => {
+        if (err) reject(new Error({ code: 500, error: "Error with sql" }));
+        else if (result.length === 0) resolve(user);
+        else {
+          user.collections = result.map((RowDataPacket) => {
+            return RowDataPacket.imageId;
+          });
+          resolve(user);
+        }
+      }
+    );
+  });
+};
+
+const signUserData = (user) => {
+  return new Promise((resolve, reject) => {
+    connection.query("select * from privatedata", [], (err, result) => {
+      secretKey = result[0].secretKey;
+      token = jwt.sign(
+        {
+          email: user.email,
+          userName: user.email,
+          likes: user.likes.toString(),
+          collections: user.collections.toString(),
+        },
+        secretKey,
+        {
+          expiresIn: "2d",
+        }
+      );
+      user.token = token;
+      console.log(token);
+      resolve(user);
+    });
+  });
+};
+
+router.post("/loginUser", function (req, res, next) {
+  checkEmailExistPromise(req.body.email)
+    .then(() => {
+      return checkPasswordCorrect(req.body.email, req.body.password);
+    })
+    .then(({ userName, email }) => {
+      return addUserData({ userName, email });
+    })
+    .then((user) => {
+      return addUserLikes(user);
+    })
+    .then((user) => {
+      return addUserCollections(user);
+    })
+    .then((user) => {
+      return signUserData(user);
+    })
+    .then((user) => {
+      res.status(200).send(user);
+    })
+    .catch((err) => res.status(err.code).send({ error: err.error }));
 });
 
 router.post("/addUser", function (req, res, next) {
@@ -95,32 +203,17 @@ router.post("/addUser", function (req, res, next) {
       } else if (result.length > 0) {
         return res.status(409).send("Email already exists");
       } else {
-        connection.query("select * from privatedata", [], (err, result) => {
-          const { secretKey } = result[0];
-          token = jwt.sign(
-            { email: req.body.email, userName: req.body.userName },
-            secretKey,
-            {
-              expiresIn: "2d",
+        connection.query(
+          `insert into users (email, password, userName) values (?, ?, ?)`,
+          [req.body.email.toLowerCase(), req.body.password, req.body.userName],
+          (err, result) => {
+            if (err) {
+              res.status(500).send("Server error");
+            } else {
+              res.send({ message: "Register success, enjoy!" });
             }
-          );
-          connection.query(
-            `insert into users (email, password, userName, token) values (?, ?, ?, ?)`,
-            [
-              req.body.email.toLowerCase(),
-              req.body.password,
-              req.body.userName,
-              token,
-            ],
-            (err, result) => {
-              if (err) {
-                res.status(500).send("Server error");
-              } else {
-                res.send({ message: "Register success, enjoy!" });
-              }
-            }
-          );
-        });
+          }
+        );
       }
     }
   );

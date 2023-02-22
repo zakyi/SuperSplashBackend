@@ -54,7 +54,7 @@ const handleAction = async (imageId, userEmail, table) => {
           reject(new Error("Sql error"));
         }
 
-        resolve("OK");
+        resolve(`${table} OK`);
       });
     });
   };
