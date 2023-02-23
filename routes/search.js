@@ -1,6 +1,8 @@
 var express = require("express");
+var sizeOf = require("image-size");
 var router = express.Router();
 var fs = require("fs");
+const ROOT_URL = "http://10.128.138.178:3005";
 
 /* GET home page. */
 router.get("/anime", function (req, res, next) {
@@ -11,7 +13,9 @@ router.get("/anime", function (req, res, next) {
     results: readDir.map((dir) => {
       return {
         id: `anime/${dir}`,
-        path: `http://localhost:3005/images/anime/${dir}`,
+        path: `${ROOT_URL}/images/anime/${dir}`,
+        width: sizeOf(`./public/images/anime/${dir}`).width,
+        height: sizeOf(`./public/images/anime/${dir}`).height,
       };
     }),
   };
@@ -26,7 +30,9 @@ router.get("/culture", function (req, res, next) {
     results: readDir.map((dir) => {
       return {
         id: `culture/${dir}`,
-        path: `http://localhost:3005/images/culture/${dir}`,
+        path: `${ROOT_URL}/images/culture/${dir}`,
+        width: sizeOf(`./public/images/culture/${dir}`).width,
+        height: sizeOf(`./public/images/culture/${dir}`).height,
       };
     }),
   };
@@ -42,7 +48,9 @@ router.get("/nature", function (req, res, next) {
     results: readDir.map((dir) => {
       return {
         id: `nature/${dir}`,
-        path: `http://localhost:3005/images/nature/${dir}`,
+        path: `${ROOT_URL}/images/nature/${dir}`,
+        width: sizeOf(`./public/images/nature/${dir}`).width,
+        height: sizeOf(`./public/images/nature/${dir}`).height,
       };
     }),
   };
@@ -58,7 +66,9 @@ router.get("/wallpaper", function (req, res, next) {
     results: readDir.map((dir) => {
       return {
         id: `wallpaper/${dir}`,
-        path: `http://localhost:3005/images/wallpaper/${dir}`,
+        path: `${ROOT_URL}/images/wallpaper/${dir}`,
+        width: sizeOf(`./public/images/wallpaper/${dir}`).width,
+        height: sizeOf(`./public/images/wallpaper/${dir}`).height,
       };
     }),
   };
