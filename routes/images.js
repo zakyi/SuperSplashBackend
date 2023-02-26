@@ -46,11 +46,11 @@ const getComments = (imageId) => {
   });
 };
 
-const insertComment = (imageId, userId, comment) => {
+const insertComment = (imageId, userId, comment, time) => {
   return new Promise((resolve, reject) => {
     connection.query(
-      `insert into comments (imageId, userEmail, content) values (?, ?, ?)`,
-      [imageId, userId, comment],
+      `insert into comments (imageId, userEmail, content, time) values (?, ?, ?, ?)`,
+      [imageId, userId, comment, time],
       (err, result) => {
         if (err) reject(err.message);
         resolve(result);
@@ -75,11 +75,16 @@ router.post("/comments", async (req, res, next) => {
       const result = await insertComment(
         req.body.imageId,
         req.body.userId,
-        req.body.comment
+        req.body.comment,
+        req.body.time
       );
       res
         .status(200)
-        .send({ comment: req.body.comment, userId: req.body.userId });
+        .send({
+          comment: req.body.comment,
+          userId: req.body.userId,
+          time: req.body.time,
+        });
     } catch (err) {
       console.log(err);
     }
