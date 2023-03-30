@@ -26,7 +26,7 @@ app.use(
   express.static(path.join(__dirname, "public"), { etag: true, maxAge: "2d" })
 );
 
-app.use("/", indexRouter);
+app.use("/", searchRouter);
 app.use("/users", usersRouter);
 app.use("/search", searchRouter);
 app.use("/userAction", userActionRouter);

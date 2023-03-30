@@ -3,7 +3,7 @@ var sizeOf = require("image-size");
 var mysql = require("mysql");
 var fs = require("fs");
 
-const ROOT_URL = "http://10.28.227.147:3005";
+const ROOT_URL = "http://10.28.227.147:3080";
 
 var router = express.Router();
 
