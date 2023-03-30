@@ -25,7 +25,8 @@ router.post("/verifyUser", (req, res, next) => {
   connection.query("select * from privatedata", [], (err, result) => {
     try {
       const decode = jwt.verify(token, result[0].secretKey);
-      res.status(200).send({ message: " Token valid " });
+      console.log(decode);
+      res.status(200).send({ userData: decode, token });
     } catch (err) {
       res.status(400).send({ message: " Token invalid " });
     }
