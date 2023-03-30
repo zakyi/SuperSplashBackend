@@ -34,6 +34,7 @@ const getLikeCount = (imageId) => {
 
 /* GET home page. */
 router.get("/anime", async function (req, res, next) {
+  console.log(req);
   console.log(req.query.amount);
   let readDir = fs.readdirSync(`./public/images/anime`);
   //   console.log(readDir);
