@@ -3,7 +3,7 @@ var sizeOf = require("image-size");
 var mysql = require("mysql");
 var fs = require("fs");
 
-//改为IPv6
+//图片的path改为IPv6
 const ROOT_URL = "https://[2001:da8:215:3c02:ac9e:f2f:d82b:d4f9]:443";
 
 var router = express.Router();
