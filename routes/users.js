@@ -190,7 +190,7 @@ router.post("/loginUser", function (req, res, next) {
       console.log(user);
       res.status(200).send(user);
     })
-    .catch((err) => console.log(err));
+    .catch((err) => res.send(err.message));
 });
 
 router.post("/addUser", function (req, res, next) {
