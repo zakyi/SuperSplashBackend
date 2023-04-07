@@ -19,9 +19,10 @@ connection.connect((err) => {
 var router = express.Router();
 
 const generateSql = (table, type) => {
-  if (type === "select")
+  if (type === "select") {
+    console.log("select * from " + table + " where imageId=? and userEmail=?");
     return "select * from " + table + " where imageId=? and userEmail=?";
-  else if (type === "insert")
+  } else if (type === "insert")
     return "insert into " + table + " (imageId, userEmail) values (?, ?)";
 };
 

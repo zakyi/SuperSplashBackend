@@ -72,8 +72,8 @@ const addUserData = ({ userName, email }) => {
       userName,
       email,
       //TODO//
-      likes: [],
-      collections: [],
+      // likes: [],
+      // collections: [],
       ////////
       token: "",
     };
@@ -179,12 +179,12 @@ router.post("/loginUser", function (req, res, next) {
     .then(({ userName, email }) => {
       return addUserData({ userName, email });
     })
-    .then((user) => {
-      return addUserLikes(user);
-    })
-    .then((user) => {
-      return addUserCollections(user);
-    })
+    // .then((user) => {
+    //   return addUserLikes(user);
+    // })
+    // .then((user) => {
+    //   return addUserCollections(user);
+    // })
     .then((user) => {
       return signUserData(user);
     })
