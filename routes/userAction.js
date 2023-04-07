@@ -134,7 +134,7 @@ router.post("/", async (req, res, next) => {
   try {
     await verifyUserToken(token);
     await handleAction(req.body.imageId, req.body.userEmail, req.body.type);
-    res.status(200).send("OK");
+    res.status(200).send({ message: "OK" });
   } catch (err) {
     console.log(err);
     res.status(400).send({ message: err.message });
