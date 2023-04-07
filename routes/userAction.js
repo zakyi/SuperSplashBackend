@@ -20,9 +20,9 @@ var router = express.Router();
 
 const generateSql = (table, type) => {
   if (type === "select")
-    return `select * from ${table} where imageId=? and userEmail=?`;
+    return "select * from " + table + " where imageId=? and userEmail=?";
   else if (type === "insert")
-    return `insert into ${table} (imageId, userEmail) values (?, ?)`;
+    return "insert into " + table + " (imageId, userEmail) values (?, ?)";
 };
 
 const handleAction = async (imageId, userEmail, table) => {
