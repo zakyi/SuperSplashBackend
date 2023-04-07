@@ -35,8 +35,7 @@ const handleAction = async (imageId, userEmail, table) => {
           reject(new Error("Sql error"));
         }
 
-        if (result.length !== 0) {
-          console.log(result.length);
+        if (result == null || result.length !== 0) {
           reject(new Error(`Already in ${table}`));
         }
 
