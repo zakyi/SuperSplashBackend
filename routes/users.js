@@ -39,7 +39,7 @@ const checkEmailExistPromise = (email) => {
       `select * from users where email=?`,
       [email],
       (err, result) => {
-        if (err) reject(new Error({ code: 500, error: "Error with sql" }));
+        if (err) reject("Error with sql");
         else if (result.length === 0)
           reject(new Error({ code: 400, error: "Email does not exist" }));
         else resolve("OK");
@@ -55,8 +55,7 @@ const checkPasswordCorrect = (email, password) => {
       [email, password],
       (err, result) => {
         if (err) reject(new Error({ code: 500, error: "Error with sql" }));
-        else if (result.length === 0)
-          reject(new Error({ code: 400, error: "Incorrect password" }));
+        else if (result.length === 0) reject("Incorrect password");
         else {
           const { userName, email } = result[0];
           resolve({ userName, email });
@@ -87,7 +86,7 @@ const addUserLikes = (user) => {
       "select * from likes where userEmail=?",
       [user.email],
       (err, result) => {
-        if (err) reject(new Error({ code: 500, error: "Error with sql" }));
+        if (err) reject("Error with sql");
         else if (result.length === 0) resolve(user);
         else {
           /**result
@@ -135,7 +134,7 @@ const addUserCollections = (user) => {
       "select * from collections where userEmail=?",
       [user.email],
       (err, result) => {
-        if (err) reject(new Error({ code: 500, error: "Error with sql" }));
+        if (err) reject("Error with sql");
         else if (result.length === 0) resolve(user);
         else {
           user.collections = result.map((RowDataPacket) => {
@@ -190,7 +189,7 @@ router.post("/loginUser", function (req, res, next) {
       console.log(user);
       res.status(200).send(user);
     })
-    .catch((err) => res.send(err.message));
+    .catch((err) => res.send(err));
 });
 
 router.post("/addUser", function (req, res, next) {
