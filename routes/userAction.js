@@ -132,12 +132,9 @@ router.post("/", async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
   try {
-    let user = await verifyUserToken(token);
+    await verifyUserToken(token);
     await handleAction(req.body.imageId, req.body.userEmail, req.body.type);
-    user = addUserAction(user, req.body.imageId, req.body.type);
-    const newUser = await signUserData(user);
-    console.log(newUser);
-    res.status(200).send(newUser);
+    res.status(200).send("OK");
   } catch (err) {
     console.log(err);
     res.status(400).send({ message: err.message });
