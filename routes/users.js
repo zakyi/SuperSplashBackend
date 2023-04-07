@@ -156,8 +156,6 @@ const signUserData = (user) => {
         {
           email: user.email,
           userName: user.email,
-          likes: user.likes.toString(),
-          collections: user.collections.toString(),
         },
         secretKey,
         {
@@ -189,6 +187,7 @@ router.post("/loginUser", function (req, res, next) {
       return signUserData(user);
     })
     .then((user) => {
+      console.log(user);
       res.status(200).send(user);
     })
     .catch((err) => res.status(err.code).send({ error: err.error }));
